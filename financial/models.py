@@ -9,7 +9,7 @@ from django.db.models import Q
 
 
 # Create your models here.
-class Account(models.Model):
+class FinancialAccount(models.Model):
     name = models.CharField("nome da conta", max_length=50)
     description = models.CharField(max_length=200)
     bank = 'BK'
@@ -69,9 +69,9 @@ class Transaction(models.Model):
     date = models.DateField("data", blank=False)
     description = models.CharField("descrição", max_length=200, blank=False)
     acc_from = models.ForeignKey(
-        Account, on_delete=models.PROTECT, verbose_name="conta debitada", related_name='taken', blank=False)
+        FinancialAccount, on_delete=models.PROTECT, verbose_name="conta debitada", related_name='taken', blank=False)
     acc_to = models.ForeignKey(
-        Account, on_delete=models.PROTECT, verbose_name="conta creditada", related_name='added', blank=False)
+        FinancialAccount, on_delete=models.PROTECT, verbose_name="conta creditada", related_name='added', blank=False)
     value = models.DecimalField("valor", max_digits=15, decimal_places=2, validators=[
                                 validators.MinValueValidator(0.0)], blank=False)
 
@@ -131,5 +131,5 @@ class Transaction(models.Model):
                     raise ValidationError(
                         u'Saldo insuficiente para realizar a transação.')
 
-        except Account.DoesNotExist as e:
+        except FinancialAccount.DoesNotExist as e:
             pass
