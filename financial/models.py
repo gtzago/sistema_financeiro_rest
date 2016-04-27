@@ -22,7 +22,10 @@ class FinancialAccount(models.Model):
     )
     acc_type = models.CharField(
         "tipo", max_length=2, choices=acc_type_choices, default=expense)
-    balance = models.DecimalField("saldo", max_digits=15, decimal_places=2)
+    balance = models.DecimalField(
+        "saldo", default=0, max_digits=15, decimal_places=2)
+    # cria o campo do dono da instancia, o unico que podera altera-la.
+    owner = models.ForeignKey('auth.User', related_name='financial_accounts')
 
     # cria uma propriedade para as instâncias de account, é o saldo total.
     @property
@@ -74,6 +77,8 @@ class Transaction(models.Model):
         FinancialAccount, on_delete=models.PROTECT, verbose_name="conta creditada", related_name='added', blank=False)
     value = models.DecimalField("valor", max_digits=15, decimal_places=2, validators=[
                                 validators.MinValueValidator(0.0)], blank=False)
+
+    owner = models.ForeignKey('auth.User', related_name='transactions')
 
     def is_credit(self, account):
         return self.acc_to == account

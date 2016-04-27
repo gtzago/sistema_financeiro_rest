@@ -1,11 +1,23 @@
 # -*- coding: utf-8 -*-
 
 # Create your views here.
-from rest_framework import viewsets
+from django.contrib.auth.models import User
+from rest_framework import permissions
+from rest_framework import viewsets, generics
 
-from financial.serializer import FinancialAccountSerializer, TransactionSerializer
+from financial.permissions import IsOwnerOrReadOnly
+from financial.serializer import FinancialAccountSerializer, TransactionSerializer, UserSerializer
 
 from .models import FinancialAccount, Transaction
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+
+    """
+    This viewset automatically provides `list` and `detail` actions.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 class FinancialAccountViewSet(viewsets.ModelViewSet):
@@ -17,14 +29,30 @@ class FinancialAccountViewSet(viewsets.ModelViewSet):
     """
     queryset = FinancialAccount.objects.all()
     serializer_class = FinancialAccountSerializer
+
+    def perform_create(self, serializer):
+        '''
+         The user isn't sent as part of the serialized representation, but is
+         instead a property of the incoming request. The way we deal with that
+         is by overriding a .perform_create() method on our view, that
+         allows us to modify how the instance save is managed, and handle any
+         information that is implicit in the incoming request or requested URL.
+        '''
+        serializer.save(owner=self.request.user)
     # permission_classes = (permissions.AllowAny)
-    # permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-    #                      IsOwnerOrReadOnly,)
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,)
 
 
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+    # permission_classes = (permissions.AllowAny)
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,)
 
 #
 #
