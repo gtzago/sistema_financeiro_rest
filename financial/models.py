@@ -85,6 +85,7 @@ class Transaction(models.Model):
 
     @dj_transaction.atomic
     def save(self, *args, **kwargs):
+        self.full_clean()
         super(Transaction, self).save(*args, **kwargs)
         self.acc_from.balance -= self.value
         self.acc_from.save()
